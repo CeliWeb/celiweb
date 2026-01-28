@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useTransition } from 'react'
+import { searchProductsAction } from '@/app/productos/actions'
 
 interface Product {
   id: string
@@ -13,22 +14,15 @@ interface Product {
   activo: string
 }
 
-interface SearchResponse {
-  products: Product[]
-  total: number
-  page: number
-  totalPages: number
-}
-
 export default function ProductSearch() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Product[]>([])
-  const [loading, setLoading] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
 
-  const search = useCallback(async (searchQuery: string, pageNum: number) => {
+  const search = useCallback((searchQuery: string, pageNum: number) => {
     if (!searchQuery.trim()) {
       setResults([])
       setTotal(0)
@@ -36,20 +30,12 @@ export default function ProductSearch() {
       return
     }
 
-    setLoading(true)
-    try {
-      const response = await fetch(
-        `/api/products/search?q=${encodeURIComponent(searchQuery)}&page=${pageNum}`
-      )
-      const data: SearchResponse = await response.json()
+    startTransition(async () => {
+      const data = await searchProductsAction(searchQuery, pageNum)
       setResults(data.products)
       setTotal(data.total)
       setTotalPages(data.totalPages)
-    } catch (error) {
-      console.error('Error buscando productos:', error)
-    } finally {
-      setLoading(false)
-    }
+    })
   }, [])
 
   useEffect(() => {
@@ -78,17 +64,17 @@ export default function ProductSearch() {
         />
       </div>
 
-      {loading && (
+      {isPending && (
         <div className="text-center py-8 text-gray-500">Buscando...</div>
       )}
 
-      {!loading && query && results.length === 0 && (
+      {!isPending && query && results.length === 0 && (
         <div className="text-center py-8 text-gray-500">
           No se encontraron productos para "{query}"
         </div>
       )}
 
-      {!loading && results.length > 0 && (
+      {!isPending && results.length > 0 && (
         <div>
           <div className="flex justify-between items-center mb-4">
             <p className="text-sm text-gray-500">
