@@ -42,7 +42,7 @@ export default function ProductSearch() {
     const debounceTimer = setTimeout(() => {
       setPage(1)
       search(query, 1)
-    }, 300)
+    }, 500)
 
     return () => clearTimeout(debounceTimer)
   }, [query, search])
@@ -70,7 +70,7 @@ export default function ProductSearch() {
 
       {!isPending && query && results.length === 0 && (
         <div className="text-center py-8 text-gray-500">
-          No se encontraron productos para "{query}"
+          No se encontraron productos para &ldquo;{query}&rdquo;
         </div>
       )}
 
