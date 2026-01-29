@@ -42,7 +42,7 @@ export default function ProductSearch() {
     const debounceTimer = setTimeout(() => {
       setPage(1)
       search(query, 1)
-    }, 300)
+    }, 150)
 
     return () => clearTimeout(debounceTimer)
   }, [query, search])
